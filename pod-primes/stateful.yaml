@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: primes
+spec:
+  selector:
+    matchLabels:
+      app: primes # has to match .spec.template.metadata.labels
+  serviceName: "primes"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: primes # has to match .spec.selector.matchLabels
+    spec:
+      shareProcessNamespace: true
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: primes
+        #image: vtakis/primes:arm-no-deb
+        image: vtakis/primes-py:v2
+        #image: vtakis/restore_pod:v4
+        #image: nginx
+        #image: nginx
+        # securityContext:
+        #   capabilities:
+        #     add:
+        #       - SYS_PTRACE
+        volumeMounts:
+        - name: task-pv-storage
+          mountPath: /home/
+        #command: ["/bin/sh","-c","cd / && pwd && python3 ./my_script.py"]
+        #command: ["/bin/sh","-c","cd /usr/bin/ && ls -la"]
+       # args: ["/home/printPrimes.sh"]
+      #  command: ["/bin/sh", "-c", "mkdir -p /home/data/ && python my_script.py>/home/data/out.txt"]
+      volumes:
+        - name: task-pv-storage
+          persistentVolumeClaim:
+            claimName: task-pv-claim
+      hostNetwork: true
+      nodeName: pi1
+      #nodeName: ellycris
+      #nodeSelector:
+      #  colour: green
